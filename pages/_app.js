@@ -1,33 +1,25 @@
-import { Context } from "../data/Context";
 import "../styles/globals.css";
-import { initStore } from "../data/Store";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Head from "next/head";
+import { Provider, useDispatch, useSelector } from "react-redux";
+import { actions, rxStore } from "../data/store/store";
 
-function App({ Component, pageProps }) {
-	const [store, setStore] = useState(initStore);
-
+function Emoji() {
 	const location = useRouter().asPath.replace("/", "");
+	const dispatch = useDispatch();
+	const store = useSelector(state => state);
 
 	const changeEmoji = useCallback(() => {
 		if (location.startsWith("code")) {
-			setStore(store => {
-				return { ...store, emoji: "👨🏽‍💻" };
-			});
+			dispatch(actions.setEmoji("👨🏽‍💻"));
 		} else if (location.startsWith("blog")) {
-			setStore(store => {
-				return { ...store, emoji: "📝" };
-			});
+			dispatch(actions.setEmoji("📝"));
 		} else if (location === "about") {
-			setStore(store => {
-				return { ...store, emoji: "✨" };
-			});
+			dispatch(actions.setEmoji("✨"));
 		} else {
-			setStore(store => {
-				return { ...store, emoji: "🙋🏽‍♂️" };
-			});
+			dispatch(actions.setEmoji("🙋🏽‍♂️"));
 		}
 	}, [location]);
 
@@ -35,8 +27,14 @@ function App({ Component, pageProps }) {
 		changeEmoji();
 	}, [changeEmoji]);
 
+	return store.emoji;
+}
+
+function App({ Component, pageProps }) {
+	const location = useRouter().asPath.replace("/", "");
+
 	return (
-		<Context.Provider value={{ store, setStore, location }}>
+		<Provider store={rxStore}>
 			<Head>
 				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 			</Head>
@@ -47,7 +45,7 @@ function App({ Component, pageProps }) {
 							<Link href="/">
 								<a>
 									<b>
-										Hola, soy <span className="underlined">Andrés</span> {store.emoji}
+										Hola, soy <span className="underlined">Andrés</span> <Emoji />
 									</b>
 								</a>
 							</Link>
@@ -69,7 +67,7 @@ function App({ Component, pageProps }) {
 					<Component {...pageProps} />
 				</section>
 			</main>
-		</Context.Provider>
+		</Provider>
 	);
 }
 

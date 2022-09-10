@@ -3,11 +3,9 @@ import { separator, siteName } from "../data/Meta";
 import Head from "next/head";
 import hljs from "highlight.js/lib/common";
 import "highlight.js/styles/atom-one-dark.css";
-import { useContext, useEffect } from "react";
-import { Context } from "../data/Context";
+import { useEffect } from "react";
 
 export function Post({ post }) {
-	const { location } = useContext(Context);
 
 	const getDate = date => {
 		let str = date.split("T");

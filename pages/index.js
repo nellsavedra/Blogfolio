@@ -9,7 +9,7 @@ export default function Welcome({ data }) {
 	return (
 		<>
 			<Head>
-				<title key={"title"}>{`${siteName} ${separator} Developer`}</title>
+				<title key={"title"}>{`${siteName} ${separator} Front End Engineer + UX/UI`}</title>
 				<link  href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" />
 			</Head>
 

@@ -3,8 +3,25 @@ import Meta from "../../components/Meta";
 import Posts from "../../components/Posts";
 import { blogPostsURL, codePostsURL } from "../../data/Endpoints";
 import { separator, siteName } from "../../data/Meta";
+import { useEffect } from "react";
+import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { actions } from "../../data/store/store";
 
 export default function Blog({ url, title, location, resolvedUrl }) {
+	const store = useSelector(state => state);
+	const dispatch = useDispatch();
+	
+	useEffect(() => {
+		if (!store[location].rendered) {
+			axios.get(url + store[location].page).then(({ data, headers }) => {
+				dispatch(actions.setPages([parseInt(headers["x-wp-totalpages"]), location]));
+				dispatch(actions.setPosts([data, location]));
+				dispatch(actions.setRendered([true, location]));
+			});
+		}
+	}, [location]);
+
 	return (
 		<>
 			<Head>

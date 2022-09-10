@@ -1,46 +1,20 @@
 import axios from "axios";
-import { useCallback, useContext, useEffect, useState } from "react";
 import { separator, siteName } from "../data/Meta";
-import { Context } from "../data/Context";
 import Head from "next/head";
 import Link from "next/link";
+import { useDispatch, useSelector } from "react-redux";
+import { actions } from "../data/store/store";
 
 export default function Posts({ url, title, location }) {
-	const { store, setStore } = useContext(Context);
-	const [onDemand, setOnDemand] = useState(null);
+	const store = useSelector(state => state);
+	const dispatch = useDispatch();
 	
-	const callAPI = useCallback(() => {
-		if (!store.rendered[location]) {
-			axios.get(url + store.page[location]).then(({ data }) => {
-				setStore(store => {
-					return { ...store, posts: { ...store.posts, [location]: [...data] } };
-				});
-				setStore(store => {
-					return { ...store, rendered: { ...store.rendered, [location]: true } };
-				});
-			});
-		} else if (onDemand) {
-			axios
-				.get(url + store.page[location])
-				.then(({ data }) => {
-					setStore(store => {
-						return { ...store, posts: { ...store.posts, [location]: [...store.posts[location], ...data] } };
-					});
-				})
-				.then(() => {
-					axios.get(url + (store.page[location] + 1)).catch(() => {
-						setStore(store => {
-							return { ...store, nextpage: { ...store.nextpage, [location]: false } };
-						});
-					});
-					setOnDemand(false);
-				});
-		}
-	}, [store.page]);
-
-	useEffect(() => {
-		callAPI();
-	}, [callAPI]);
+	const getPosts = () => {
+		axios.get(url + (store[location].page + 1)).then(({ data }) => {
+			dispatch(actions.setNewPosts([data, location]));
+			dispatch(actions.setPage([store[location].page + 1, location]));
+		});
+	};
 
 	return (
 		<>
@@ -53,7 +27,7 @@ export default function Posts({ url, title, location }) {
 				</b>
 			</h2>
 			<div className="page-posts">
-				{store.posts[location].map(post => {
+				{store[location].posts.map(post => {
 					return (
 						<article key={post.id}>
 							<h3>
@@ -64,18 +38,13 @@ export default function Posts({ url, title, location }) {
 						</article>
 					);
 				})}
-				{!store.nextpage[location] && <p className="h2 posts-completed">✋🏽 No hay más posts.</p>}
-				{store.posts[location].length >= 10 && store.nextpage[location] && (
-					<button
-						className="load-more-button"
-						onClick={() => {
-							setOnDemand(true);
-							setStore(store => ({ ...store, page: { ...store.page, [location]: store.page[location] + 1 } }));
-						}}
-					>
+				{store[location].rendered && store[location].page >= store[location].pages ? (
+					<p className="h2 posts-completed">✋🏽 No hay más posts.</p>
+				) : store[location].page < store[location].pages ? (
+					<button className="load-more-button" onClick={() => getPosts()}>
 						Ver más…
 					</button>
-				)}
+				) : null}
 			</div>
 		</>
 	);
